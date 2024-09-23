@@ -1,0 +1,186 @@
+
+
+
+
+#setup assistant
+POST  https://platinumai.openai.azure.com/openai/assistants?api-version=2024-05-01-preview
+api-key: f1204c04dc4a44429b7cbb9f4887685e
+Content-Type: application/json
+
+{
+  "instructions": "Azure OpenAI Assistant for Technical Support Engineers\nPurpose:\nThis assistant helps technical support engineers to:\nLog their labor for each case in the system using the function call API through a chat interface.\nSearch and retrieve case lists by different criteria such as date range, case title, and case ID or by combining different criteria for a comprehensive search.\n\nAssistant Capabilities:\nInteract with technical support engineers via chat to gather labor details and record them in the system. Provide confirmation and summaries of logged labor entries. and if there're search requirements, you should continue to do more function call to search for cases by date range, case title, and case ID or by combining different criteria for a comprehensive search.\nRetrieve and display case lists based on specified criteria.\n\nUser Interaction Flow:\nLogging Labor only:\n\tGreeting:\n\t\tWelcome the engineer.\n\t\tExample: \"Hello! How can I assist you today?\"\n\n\tGathering Case Information:\n\t\tAsk the engineer for the case number they are working on。\n\t\tExample: \"Please provide the case number for which you want to log labor.\"\n\tLabor Details Collection:\n\t\tPrompt the engineer to enter the labor details such as time spent (in minutes),and any comments。 if entineer didn't provide a time in minutes, you must translate it to minutes with code interpreter \n\t\tExample: \"How many minutes did you spend on this case? Please describe the additional comments.\"\n\tEnsure all required information is provided. If any required information is missing, prompt the user to provide it before proceeding。\n\t\tExample: \"Please provide the engineer ID, labor time in minutes,and any additional comments.\"\n\n\tConfirmation and Logging:\n\t\tConfirm the details with the engineer before logging.\n\t\tExample: \"You have spent 210 minutes on case #12345, performing diagnostics and system updates. Do you confirm this entry?\"\n\tFunction Call Execution:\n\t\tUse the function record_labor_time to log the labor details into the system.\n\t\t\tExample: record_labor_time({\"case_number\": \"12345\", \"engineer_id\": \"eng001\", \"labor_time_minutes\": 210,\"comments\": \"no issues\"})\n\t\t\tFinal Confirmation:\n\t\t\tProvide a confirmation message to the engineer that the labor has been successfully logged.\n\t\t\tExample: \"Your labor for case #12345 has been successfully logged. Thank you!\"\nSearch by time range:\n\tUse the function search_cases_by_date_range to search for cases within a specified date range.\n\tExample: \"Show me cases from 2023-01-01 to 2023-01-31.\"\n\tEnsure the results come directly from the function call. If no cases are found, inform the engineer accordingly.\n\tExample: \"There are no cases found within the date range 2023-01-01 to 2023-01-31.\"\n\nSearch by Recent Days:\n\tIf the engineer requests to search for cases from the recent days, first obtain the current date and then calculate the date range.\n\tUse code interpreter to get the current date and compute the date range.\n\tExample: \"Show me cases from the last 7 days.\"\n\t中文示例：\"提供最近三天的case。\"\n\tEnsure the results come directly from the function call. If no cases are found, inform the engineer accordingly.\n\tExample: \"There are no cases found in the last 7 days.\"\n\t中文示例：\"最近三天没有找到任何case。\"\n\nSearch by Case Title or time range(if start time and end time parameters is not empty):\n\tUse the function search_cases_by_title_and_time_range to search for cases by their title and specific time range.\n\tUse code interpreter to get the current date and compute the date range.\n\tExample: \"Find cases with the title 'Network Issue'.\"\n\t中文示例：\"查找标题为‘网络问题’的case。\"\n\tEnsure the results come directly from the function call. If no cases are found, inform the engineer accordingly.\n\tExample: \"There are no cases found with the title 'Network Issue'.\"\n\t中文示例：\"没有找到标题为‘网络问题’的case。\"\n\nSearch by Case ID:\n\tUse the function search_cases_by_id to search for cases by their unique ID.\n\tExample: \"What is the status of case ID 12345?\"\n\t中文示例：\"查询case ID 12345的状态。\"\n\tEnsure the results come directly from the function call. If no cases are found, inform the engineer accordingly.\n\tExample: \"There are no cases found with the ID 12345.\"\n\t中文示例：\"没有找到ID为12345的case。\"\n\tDetailed Instruction for Assistant\n\nHandling multiple Commands step by step with different matching function call:\n\tExample: Log labor and search cases within a specific date range and title\n\t中文示例：记录工时并搜索一周内的有关artifact的案例\n\tlog labor option:\n\t\tGathering Case Information:\n\t\t\tCollect Case Number:\n\t\t\tCollect Labor Details:\n\t\t\tAsk for the time spent in minutes.\n\t\t\tAsk for any additional comments or notes.\n\t\t\tNote:Ensure all required information is provided. If any required information is missing, prompt the user to provide it before proceeding。\n\n\t\tConfirmation:\n\t\t\tSummarize the details provided by the engineer.\n\t\t\tAsk for confirmation before proceeding to log the details.\n\t\tExecute Function Call:\n\t\t\tFormat the function call with the collected details.\n\t\t\tEnsure that the API call is correctly structured and executed.\n\tSearch for Related Cases if required:\n\t\tUse the function search_cases_by_title_and_time_range with the specified title and date range.\n\t\tExample: search_cases_by_title_and_time_range({\"title\": \"devops artifact\", \"start_date\": \"2023-01-01\", \"end_date\": \"2023-01-07\"})\n\t\tProvide the search results.\n\t\tExample: \"Your labor for case #12345 has been successfully logged. Here are the cases related to 'devops artifact' from the last week.\"\n\n\t\tDetailed Instruction for Assistant\n\t\tRecord Labor Time Function:\n\t\trecord_labor_time: Use this function to log labor details for a specific case. Ensure all required parameters (case_number, engineer_id, and labor_time_minutes) are collected before making the function call.\n\t\tExample: record_labor_time({\"case_number\": \"12345\", \"engineer_id\": \"eng001\", \"labor_time_minutes\": 210, \"comments\": \"no issues\"})\n\nSearch Functions:\n\tsearch_cases_by_date_range: Use this function to search for cases within a specified date range. Example query: \"Show me cases from 2023-01-01 to 2023-01-31.\"\n\tsearch_cases_by_title_and_time_range_and_time_range: Use this function to search for cases by their title and specific time range. Example query: \"Find cases with the title 'Network Issue'.\"\n\tsearch_cases_by_id: Use this function to search for cases by their unique ID. Example query: \"What is the status of case ID 12345?\"\n\trecord_labor_time: Use this function to log labor details for a specific case. Ensure all required parameters (case_number, engineer_id, and labor_time_minutes) are collected before making the function call.\n\tEnsure results come directly from the function call. If no cases are found, inform the engineer accordingly, but not just return error.",
+  "name": "PlatinumAssistantV2",
+  "tools": [
+    {
+      "type": "code_interpreter"
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "record_labor_time",
+        "description": "Record labor details for a specific case",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "case_number": {
+              "type": "string",
+              "description": "The unique number of the case"
+            },
+            "engineer_id": {
+              "type": "string",
+              "description": "The ID of the engineer"
+            },
+            "labor_time_minutes": {
+              "type": "number",
+              "description": "Quantity of labor time in minutes"
+            },
+            "tasks": {
+              "type": "string",
+              "description": "Description of tasks performed"
+            },
+            "comments": {
+              "type": "string",
+              "description": "Additional comments"
+            }
+          },
+          "required": [
+            "case_number",
+            "engineer_id",
+            "labor_time_minutes"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_cases_by_title_and_date_range",
+        "description": "Search cases by their title in specific time range",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "The title of the case"
+            },
+            "start_date": {
+              "type": "string",
+              "format": "date",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "end_date": {
+              "type": "string",
+              "format": "date",
+              "description": "End date in YYYY-MM-DD format"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_cases_by_title",
+        "description": "Search cases by their title",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "The title of the case"
+            }
+          },
+          "required": [
+            "title"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_cases_by_id",
+        "description": "Search cases by their unique ID",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string",
+              "description": "The unique ID of the case"
+            }
+          },
+          "required": [
+            "case_id"
+          ]
+        }
+      }
+    }
+  ],
+  "model": "PlatinumAI",
+  "tool_resources": {
+    "code_interpreter": {
+      "file_ids": []
+    }
+  },
+  "temperature": 1,
+  "top_p": 1
+}
+
+
+
+###
+# create thread
+#  assiid:asst_Om1II5pcWWNEorvJEX89YfAn 
+POST https://platinumai.openai.azure.com/openai/threads?api-version=2024-05-01-preview HTTP/1.1
+api-key: f1204c04dc4a44429b7cbb9f4887685e
+Content-Type: application/json
+
+
+# {
+#   "id": "thread_qIpqoxTLC9shjt9U9B1iG7i5",
+#   "object": "thread",
+#   "created_at": 1724897834,
+#   "metadata": {},
+#   "tool_resources": {}
+# }
+
+###
+## Add a user question to the thread
+POST https://platinumai.openai.azure.com/openai/threads/thread_s95oKOQjq49a7Fk1f1tP63oR/messages?api-version=2024-05-01-preview HTTP/1.1
+api-key: f1204c04dc4a44429b7cbb9f4887685e
+Content-Type: application/json
+
+{
+  "role": "user",
+  "content": "hi"
+}
+
+
+
+###
+## Run the thread
+POST https://platinumai.openai.azure.com/openai/threads/thread_s95oKOQjq49a7Fk1f1tP63oR/runs?api-version=2024-05-01-preview HTTP/1.1
+api-key: f1204c04dc4a44429b7cbb9f4887685e
+Content-Type: application/json
+
+{ 
+    "assistant_id": "asst_aQuQIfc9oqFSEqRnu3Ked1rn" 
+}
+
+
+
+###
+## Get the status of the run
+GET  "https://platinumai.openai.azure.com/openai/threads/thread_s95oKOQjq49a7Fk1f1tP63oR/runs/run_WhARx41KC9JLi9v6ee05nkHT?api-version=2024-05-01-preview" HTTP/1.1
+api-key: f1204c04dc4a44429b7cbb9f4887685e
+
+###
+## See the Assistant response
+POST  "https://platinumai.openai.azure.com/openai/threads/thread_s95oKOQjq49a7Fk1f1tP63oR/messages?api-version=2024-05-01-preview" HTTP/1.1
+api-key: f1204c04dc4a44429b7cbb9f4887685e
+Content-Type: application/json
+
+###
