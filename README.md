@@ -1,4 +1,4 @@
-# minimal-three-vr-app
+# three.js load pmx/vmd
 minimal setup for a three.js VR experience
 
 ## how to use in development
